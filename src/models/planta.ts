@@ -1,4 +1,4 @@
-import { initDatabase, saveDatabase } from '../db/database';
+import { initDatabase, saveDatabase } from '../db/database.ts';
 
 export interface Planta {
   id?: number;
