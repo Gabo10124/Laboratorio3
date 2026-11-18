@@ -1,5 +1,5 @@
 import { HuertoController } from '../controllers/huertoController.ts';
-import  type { Planta } from '../models/planta.ts';
+import type { Planta } from '../models/planta.ts';
 
 export class HuertoView {
   private controller: HuertoController;
@@ -93,16 +93,30 @@ export class HuertoView {
 
   private attachEvents(): void {
     const form = document.getElementById('planta-form') as HTMLFormElement;
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const nombre = (document.getElementById('nombre') as HTMLInputElement).value;
-      const especie = (document.getElementById('especie') as HTMLInputElement).value;
-      const frecuencia = parseInt((document.getElementById('frecuencia') as HTMLInputElement).value);
-      const notas = (document.getElementById('notas') as HTMLTextAreaElement).value;
+    if (!form) return;
 
-      await this.controller.registrarNuevaPlanta(nombre, especie, frecuencia, notas);
-      form.reset();
-      await this.cargarTarjetasPlantas();
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault(); // Evita que la página se recargue
+      
+      const nombreInput = document.getElementById('nombre') as HTMLInputElement;
+      const especieInput = document.getElementById('especie') as HTMLInputElement;
+      const frecuenciaInput = document.getElementById('frecuencia') as HTMLInputElement;
+      const notasInput = document.getElementById('notas') as HTMLTextAreaElement;
+
+      if (!nombreInput || !especieInput || !frecuenciaInput) return;
+
+      const nombre = nombreInput.value;
+      const especie = especieInput.value;
+      const frecuencia = parseInt(frecuenciaInput.value) || 3;
+      const notas = notasInput ? notasInput.value : '';
+
+      try {
+        await this.controller.registrarNuevaPlanta(nombre, especie, frecuencia, notas);
+        form.reset();
+        await this.cargarTarjetasPlantas();
+      } catch (error) {
+        console.error("Error al registrar la planta:", error);
+      }
     });
   }
 
