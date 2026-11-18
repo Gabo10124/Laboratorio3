@@ -1,5 +1,6 @@
 import initSqlJs from 'sql.js';
 import type { Database } from 'sql.js';
+import wasmUrl from 'sql.js/dist/sql-wasm.wasm?url';
 
 let db: Database | null = null;
 
@@ -7,7 +8,7 @@ export async function initDatabase(): Promise<Database> {
   if (db) return db;
 
   const SQL = await initSqlJs({
-    locateFile: (file) => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}`
+    locateFile: () => wasmUrl
   });
 
   const savedDb = localStorage.getItem('huerto_sqlite_db');
