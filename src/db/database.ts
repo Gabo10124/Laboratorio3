@@ -1,8 +1,7 @@
 import initSqlJs from 'sql.js';
-import type {Database} from 'sql.js';
+import type { Database } from 'sql.js';
 
 let db: Database | null = null;
-const DB_STORAGE_KEY = 'huerto_sqlite_db';
 
 export async function initDatabase(): Promise<Database> {
   if (db) return db;
@@ -11,39 +10,30 @@ export async function initDatabase(): Promise<Database> {
     locateFile: (file) => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}`
   });
 
-  // Intentar recuperar la base de datos guardada en localStorage
-  const savedDb = localStorage.getItem(DB_STORAGE_KEY);
+  const savedDb = localStorage.getItem('huerto_sqlite_db');
   if (savedDb) {
-    const uInt8Array = new Uint8Array(JSON.parse(savedDb));
+    const uInt8Array = new Uint8Array(JSON.parse(`[${savedDb}]`));
     db = new SQL.Database(uInt8Array);
   } else {
     db = new SQL.Database();
-    createTables();
+    db.run(`
+      CREATE TABLE IF NOT EXISTS plantas (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nombre TEXT NOT NULL,
+        especie TEXT NOT NULL,
+        frecuencia_dias INTEGER NOT NULL,
+        ultimo_riego TEXT NOT NULL,
+        notas TEXT
+      );
+    `);
+    saveDatabase(db);
   }
 
   return db;
 }
 
-function createTables() {
-  if (!db) return;
-  
-  // Creamos la tabla 'plantas' para nuestro huerto urbano
-  db.run(`
-    CREATE TABLE IF NOT EXISTS plantas (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      nombre TEXT NOT NULL,
-      especie TEXT NOT NULL,
-      frecuencia_dias INTEGER NOT NULL,
-      ultimo_riego TEXT NOT NULL,
-      notas TEXT
-    );
-  `);
-  saveDatabase();
-}
-
-export function saveDatabase() {
-  if (!db) return;
-  const data = db.export();
+export function saveDatabase(database: Database): void {
+  const data = database.export();
   const arr = Array.from(data);
-  localStorage.setItem(DB_STORAGE_KEY, JSON.stringify(arr));
+  localStorage.setItem('huerto_sqlite_db', arr.toString());
 }
